@@ -1,0 +1,32 @@
+dynamixel_mx:
+
+  topics:
+    img0: "/kitti/camera_gray_left/image_raw"
+    img1: "/kitti/camera_gray_right/image_raw"
+
+  orb:
+    nfeatures: 1500
+    scaleFactor: 1.2
+    nlevels: 1
+    edgeThreshold: 19
+    firstLevel: 0
+    WTA_K: 2
+    scoreType: 0
+    patchSize: 31
+    fastThreshold: 7
+
+  bf:
+    normType: 6
+    crossCheck: True
+
+  filterEpipolarGeometry:
+    max_u: 100.0
+    min_u: 3.0
+    max_v: 3.0
+
+  solvePnPRansac:
+    useExtrinsicGuess: False
+    iterationsCount: 100
+    reprojectionError: 2.0
+    confidence: 0.99
+    flags: 2
