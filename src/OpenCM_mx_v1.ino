@@ -1,48 +1,22 @@
-
-#include <DynamixelSDK.h>
-
-
-// Control table address (MX-series with Protocol 2.0)
-#define ADDR_MX_TORQUE_ENABLE          64                 // Control table address is different in Dynamixel model
-#define ADDR_MX_GOAL_POSITION          116
-#define ADDR_MX_PRESENT_POSITION       132
-
-// Protocol version
-#define PROTOCOL_VERSION                2.0                 // See which protocol version is used in the Dynamixel
-
-// Default setting
-#define DXL_ID                          1                   // Dynamixel ID: 1
-#define BAUDRATE                        57600
-#define DEVICENAME                      "3"                 //DEVICENAME "1" -> Serial1(OpenCM9.04 DXL TTL Ports)
-                                                            //DEVICENAME "2" -> Serial2
-                                                            //DEVICENAME "3" -> Serial3(OpenCM 485 EXP)
-#define TORQUE_ENABLE                   1                   // Value for enabling the torque
-#define TORQUE_DISABLE                  0                   // Value for disabling the torque
-#define DXL_MINIMUM_POSITION_VALUE      0                   // Dynamixel will rotate between this value
-#define DXL_MAXIMUM_POSITION_VALUE      4000                // and this value (note that the Dynamixel would not move when the position value is out of movable range. Check e-manual about the range of the Dynamixel you use.)
-#define DXL_MOVING_STATUS_THRESHOLD     20                  // Dynamixel moving status threshold
-
 #define ESC_ASCII_VALUE                 0x1b
 
 
-
 void setup() {
-  // put your setup code here, to run once:
   Serial.begin(115200);
   while(!Serial);
 
+  String input_strin_tmp;
+  
+  Serial.println("Start");
 
-  Serial.println("Start..");
+  Serial.println("input_tmp:");
+  while( Serial.available() == 0){ 
+    }
+  input_strin_tmp = Serial.readString();  
+  Serial.println("Succeeded to open the port");
+  return;
 
-
-  // Initialize PortHandler instance
-  // Set the port path
-  // Get methods and members of PortHandlerLinux or PortHandlerWindows
   dynamixel::PortHandler *portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
-
-  // Initialize PacketHandler instance
-  // Set the protocol version
-  // Get methods and members of Protocol1PacketHandler or Protocol2PacketHandler
   dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
   int index = 0;
@@ -53,26 +27,20 @@ void setup() {
   int32_t dxl_present_position = 0;               // Present position
 
   // Open port
-  if (portHandler->openPort())
-  {
-    Serial.println("Succeeded to open the port!\\n");
+  if ( portHandler->openPort() ) {
+    Serial.println("Succeeded to open the port");
   }
-  else
-  {
-    Serial.println("Failed to open the port!\\n");
-    Serial.println("Press any key to terminate...\\n");
+  else {
+    Serial.println("Failed to open the port");
     return;
   }
 
   // Set port baudrate
-  if (portHandler->setBaudRate(BAUDRATE))
-  {
+  if (portHandler->setBaudRate(BAUDRATE)){
     Serial.println("Succeeded to change the baudrate!\\n");
   }
-  else
-  {
+  else{
     Serial.println("Failed to change the baudrate!\\n");
-    Serial.println("Press any key to terminate...\\n");
     return;
   }
 

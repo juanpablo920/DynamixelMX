@@ -23,24 +23,28 @@
 
 #define ESC_ASCII_VALUE                 0x1b
 
-
 void setup() {
   Serial.begin(115200);
   while(!Serial);
-
-  Serial.println("Start");
-
-  while( Serial.available()){ 
-    }
+  
+//  String input_strin_tmp;
+//  
+//  Serial.println("Start");
+//
+//  Serial.println("input_tmp:");
+//  while( Serial.available() == 0){ 
+//    }
+//  input_strin_tmp = Serial.readString();
+//  int input_int_tmp = input_strin_tmp.toInt();  
+//  Serial.print("input_strin_tmp:"); Serial.println(input_int_tmp);
+//  return;
 
   dynamixel::PortHandler *portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
   dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
-  int index = 0;
-  int dxl_comm_result = COMM_TX_FAIL;             // Communication result
-  int dxl_goal_position[2] = {DXL_MINIMUM_POSITION_VALUE, DXL_MAXIMUM_POSITION_VALUE};         // Goal position
+  int dxl_comm_result = COMM_TX_FAIL;     // Communication result
 
-  uint8_t dxl_error = 0;                          // Dynamixel error
+  uint8_t dxl_error = 0;                  // Dynamixel error
   int32_t dxl_present_position = 0;               // Present position
 
   // Open port
@@ -54,10 +58,10 @@ void setup() {
 
   // Set port baudrate
   if (portHandler->setBaudRate(BAUDRATE)){
-    Serial.println("Succeeded to change the baudrate!\\n");
+    Serial.println("Succeeded to change the baudrate");
   }
   else{
-    Serial.println("Failed to change the baudrate!\\n");
+    Serial.println("Failed to change the baudrate");
     return;
   }
 
@@ -73,46 +77,27 @@ void setup() {
   }
   else
   {
-    Serial.println("Dynamixel has been successfully connected \\n");
+    Serial.println("Dynamixel has been successfully connected");
   }
   
-  Serial.println("Press any key to continue! (or press q to quit!)\\n");
+  Serial.println("Press any key to continue (or press q to quit)");
 
-  int input_tmp;
+  String input_tmp;
   int goal_position_tmp = 20;
   while(1)
   {
     if ( Serial.available() ){
       
-      input_tmp = Serial.read();
-      Serial.println(" ");
+      input_tmp = Serial.readString();
       Serial.print("input_tmp:"); Serial.print(input_tmp);
-      Serial.println(" ");
-      if (input_tmp == 'q'){
+      goal_position_tmp = input_tmp.toInt(); 
+      if (goal_position_tmp == 0){
         break;
       }
       
-      input_tmp = input_tmp - '0';
-      
       Serial.println(" ");
       Serial.print("input_tmp:"); Serial.print(input_tmp);
       Serial.println(" ");
-
-      if (input_tmp == 0){
-        goal_position_tmp = 0;
-      }
-      if (input_tmp == 1){
-        goal_position_tmp = 810;// 1024
-      }
-      if (input_tmp == 2){
-        goal_position_tmp = 1834;// 2048
-      }
-      if (input_tmp == 3){
-        goal_position_tmp = 2858;// 3072
-      }
-      if (input_tmp == 4){
-        goal_position_tmp = 3882;// 4095
-      }
 
       // Read present position
       dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&dxl_present_position, &dxl_error);
@@ -126,7 +111,6 @@ void setup() {
       }
       Serial.println("---");
       Serial.print("ID:");      Serial.print(DXL_ID);
-      Serial.print("GoalPos:"); Serial.print(dxl_goal_position[index]);
       Serial.print("PresPos:"); Serial.println(dxl_present_position);
       Serial.println("---");
 
@@ -153,7 +137,6 @@ void setup() {
       }
       Serial.println("---");
       Serial.print("ID:");      Serial.println(DXL_ID);
-      Serial.print("GoalPos:"); Serial.println(dxl_goal_position[index]);
       Serial.print("PresPos:"); Serial.println(dxl_present_position);
       Serial.println("---");
      
