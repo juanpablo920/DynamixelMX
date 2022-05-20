@@ -1,31 +1,36 @@
 #!/usr/bin/python
 
+import rospy
 import serial
-import time
 
-serialPort = serial.Serial(port="/dev/ttyACM0", baudrate=57600)
-print("ok")
-time.sleep(0.5)
+port = "/dev/ttyACM0"
+baudrate = 57600
+
+# rospy.init_node('dynamixel_mx')
+
+try:
+    serialPort = serial.Serial(port=port, baudrate=baudrate)
+    print("Successful connection to board")
+    print("ok")
+except:
+    print("Failed connection to board")
 
 response = serialPort.readline()
 print(response)
-time.sleep(0.5)
+
 a = "1"
 a = bytes(a, "ascii")
 serialPort.write(a)
-time.sleep(1)
 
 response = serialPort.readline()
 print(response)
-time.sleep(0.5)
+
 serialPort.write(b"2\r\n")
-time.sleep(1)
 
 response = serialPort.readline()
 print(response)
-time.sleep(0.5)
+
 serialPort.write(b"3\r\n")
-time.sleep(1)
 
 serialPort.close()
 
