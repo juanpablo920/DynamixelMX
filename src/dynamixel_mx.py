@@ -1,22 +1,31 @@
 #!/usr/bin/python
 
 import rospy
+import rospkg
 from std_msgs.msg import Int16
 
 import serial
+import yaml
 import time
 
 
 class DynamixelMx:
 
     def __init__(self):
-        self.port = "/dev/ttyACM0"
-        self.baudrate_board = 115200
-        self.init_pose = 1834
-        self.final_pose = 810
-        self.sleep_org = 30
-        self.sleep_scan = 10
-        self.delta_error = 5
+        r = rospkg.RosPack()
+        pwd_params = r.get_path(
+            'dynamixel_mx')+'/config/params.yaml'
+
+        with open(pwd_params, 'r') as f:
+            params = yaml.load(f)["dynamixel_mx"]
+
+        self.port = params["port"]
+        self.baudrate_board = params["baudrate_board"]
+        self.init_pose = params["init_pose"]
+        self.final_pose = params["final_pose"]
+        self.sleep_org = params["sleep_org"]
+        self.sleep_scan = params["sleep_scan"]
+        self.delta_error = params["delta_error"]
 
         self.pose = 0
 
@@ -165,6 +174,7 @@ class DynamixelMx:
 if __name__ == '__main__':
     rospy.init_node('dynamixel_mx')
     dynamixe_mx = DynamixelMx()
+    dynamixe_mx.setting_publisher()
     dynamixe_mx.setting_serial_port()
     dynamixe_mx.setting_board()
     try:
