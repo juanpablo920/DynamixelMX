@@ -2,9 +2,9 @@
 #include <DynamixelSDK.h>
 
 // Control table address (MX-series with Protocol 2.0)
-#define ADDR_MX_TORQUE_ENABLE          64             // Control table address is different in Dynamixel model
-#define ADDR_MX_GOAL_POSITION          116
-#define ADDR_MX_PRESENT_POSITION       132
+#define ADDR_MX_TORQUE_ENABLE           64             // Control table address is different in Dynamixel model
+#define ADDR_MX_GOAL_POSITION           116
+#define ADDR_MX_PRESENT_POSITION        132
 
 // Protocol version
 #define PROTOCOL_VERSION                2.0           // See which protocol version is used in the Dynamixel
@@ -56,30 +56,36 @@ void setup() {
   }
   else {
     Serial.println("failed_change_baudrate");
+    portHandler->closePort();
     return;
   }
 
   waiting_master();
+
+  int torque_tmp = 1;
 
   // Enable Dynamixel Torque
   dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS) {
     packetHandler->getTxRxResult(dxl_comm_result);
     Serial.println("dynamixel_failed_connected");
+    torque_tmp = 0;
   }
   else if (dxl_error != 0) {
     packetHandler->getRxPacketError(dxl_error);
     Serial.println("dynamixel_failed_connected");
+    torque_tmp = 0;
   }
   else {
     Serial.println("dynamixel_successfully_connected");
+    torque_tmp = 1;
   }
 
   String input_tmp;
   int goal_posse = 0;
   int32_t present_pose = 0;
 
-  while (1) {
+  while (torque_tmp) {
 
     if ( Serial.available() ) {
 
@@ -105,7 +111,7 @@ void setup() {
 
       if (input_tmp == "set_preset_pose") {
         Serial.println("");
-        
+
         while (Serial.available() == 0);
         input_tmp = Serial.readString();
         goal_posse = input_tmp.toInt();
@@ -125,11 +131,92 @@ void setup() {
         Serial.println("succeeded_set_preset_pose");
       }
 
+      if (input_tmp == "go_origin") {
+
+        int origin;
+        int sleep;
+        int delta_poses;
+        int delta_error;
+        int new_pos;
+
+        Serial.println("");
+        while (Serial.available() == 0);
+        input_tmp = Serial.readString();
+        origin = input_tmp.toInt();
+
+        Serial.println("");
+        while (Serial.available() == 0);
+        input_tmp = Serial.readString();
+        sleep = input_tmp.toInt();
+
+        Serial.println("");
+        while (Serial.available() == 0);
+        input_tmp = Serial.readString();
+        delta_error = input_tmp.toInt();
+
+        dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&present_pose, &dxl_error);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+          packetHandler->getTxRxResult(dxl_comm_result);
+          Serial.println("failed_go_origin");
+          break;
+        }
+        else if (dxl_error != 0) {
+          packetHandler->getRxPacketError(dxl_error);
+          Serial.print("failed_go_origin");
+          break;
+        }
+
+        delta_poses = abs(present_pose - origin);
+
+        while (delta_poses > delta_error){
+          
+          if ( delta_poses < sleep){
+            sleep = delta_poses;
+          }
+
+          if (present_pose > origin){
+            new_pos = present_pose - sleep;
+          }
+          else {
+            new_pos = present_pose + sleep;
+          }
+
+          dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_ID, ADDR_MX_GOAL_POSITION, new_pos, &dxl_error);
+
+          if (dxl_comm_result != COMM_SUCCESS) {
+            packetHandler->getTxRxResult(dxl_comm_result);
+            Serial.println("failed_go_origin");
+            break;
+          }
+          else if (dxl_error != 0) {
+            packetHandler->getRxPacketError(dxl_error);
+            Serial.println("failed_go_origin");
+            break;
+          }
+
+          dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&present_pose, &dxl_error);
+
+          if (dxl_comm_result != COMM_SUCCESS) {
+            packetHandler->getTxRxResult(dxl_comm_result);
+            Serial.println("failed_go_origin");
+            break;
+          }
+          else if (dxl_error != 0) {
+            packetHandler->getRxPacketError(dxl_error);
+            Serial.print("failed_go_origin");
+            break;
+          }
+          delay(500);
+          delta_poses = abs(present_pose - origin);
+        }
+        Serial.println("arrived_scan");
+      }
+
       if (input_tmp == "exit") {
         Serial.println("succeeded_exit");
         break;
       }
-
     }
   }
 
