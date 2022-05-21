@@ -13,8 +13,8 @@
 #define DXL_ID                          1             // Dynamixel ID: 1
 #define BAUDRATE                        57600
 #define DEVICENAME                      "3"           // DEVICENAME "1" -> Serial1(OpenCM9.04 DXL TTL Ports)
-                                                      // DEVICENAME "2" -> Serial2
-                                                      // DEVICENAME "3" -> Serial3(OpenCM 485 EXP)
+// DEVICENAME "2" -> Serial2
+// DEVICENAME "3" -> Serial3(OpenCM 485 EXP)
 #define TORQUE_ENABLE                   1             // Value for enabling the torque
 #define TORQUE_DISABLE                  0             // Value for disabling the torque
 #define DXL_MINIMUM_POSITION_VALUE      0             // Dynamixel will rotate between this value
@@ -23,23 +23,21 @@
 
 #define ESC_ASCII_VALUE                 0x1b
 
-void waiting_master(){
-  while(Serial.available()==0);
+void waiting_master() {
+  while (Serial.available() == 0);
   String msg;
   msg = Serial.readString();
 }
 
 void setup() {
   Serial.begin(115200);
-  while(!Serial);
-  
+  while (!Serial);
+
   dynamixel::PortHandler *portHandler = dynamixel::PortHandler::getPortHandler(DEVICENAME);
   dynamixel::PacketHandler *packetHandler = dynamixel::PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
   int dxl_comm_result = COMM_TX_FAIL; // Communication result
-
   uint8_t dxl_error = 0;              // Dynamixel error
-  int32_t dxl_present_position = 0;   // Present position
 
   // Open port
   if ( portHandler->openPort() ) {
@@ -53,10 +51,10 @@ void setup() {
   waiting_master();
 
   // Set port baudrate
-  if (portHandler->setBaudRate(BAUDRATE)){
+  if (portHandler->setBaudRate(BAUDRATE)) {
     Serial.println("succeeded_change_baudrate");
   }
-  else{
+  else {
     Serial.println("failed_change_baudrate");
     return;
   }
@@ -65,80 +63,74 @@ void setup() {
 
   // Enable Dynamixel Torque
   dxl_comm_result = packetHandler->write1ByteTxRx(portHandler, DXL_ID, ADDR_MX_TORQUE_ENABLE, TORQUE_ENABLE, &dxl_error);
-  if (dxl_comm_result != COMM_SUCCESS){
+  if (dxl_comm_result != COMM_SUCCESS) {
     packetHandler->getTxRxResult(dxl_comm_result);
     Serial.println("dynamixel_failed_connected");
   }
-  else if (dxl_error != 0){
+  else if (dxl_error != 0) {
     packetHandler->getRxPacketError(dxl_error);
     Serial.println("dynamixel_failed_connected");
   }
-  else{
+  else {
     Serial.println("dynamixel_successfully_connected");
   }
 
-  waiting_master();
-  
   String input_tmp;
-  int goal_position_tmp = 20;
-  
-  while(1){
-    
-    if ( Serial.available() ){
-      
+  int goal_posse = 0;
+  int32_t present_pose = 0;
+
+  while (1) {
+
+    if ( Serial.available() ) {
+
       input_tmp = Serial.readString();
-      Serial.print("input_tmp:"); Serial.print(input_tmp);
-      goal_position_tmp = input_tmp.toInt(); 
-      if (goal_position_tmp == 0){
+      input_tmp.replace("\n", "");
+
+      if (input_tmp == "get_present_pose") {
+
+        dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&present_pose, &dxl_error);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+          packetHandler->getTxRxResult(dxl_comm_result);
+          Serial.println("failed_get_present_pose");
+          break;
+        }
+        else if (dxl_error != 0) {
+          packetHandler->getRxPacketError(dxl_error);
+          Serial.print("failed_get_present_pose:");
+          break;
+        }
+        Serial.println(present_pose);
+      }
+
+      if (input_tmp == "set_preset_pose") {
+        Serial.println("");
+        
+        while (Serial.available() == 0);
+        input_tmp = Serial.readString();
+        goal_posse = input_tmp.toInt();
+
+        dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_ID, ADDR_MX_GOAL_POSITION, goal_posse, &dxl_error);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+          packetHandler->getTxRxResult(dxl_comm_result);
+          Serial.println("failed_set_preset_pose");
+          break;
+        }
+        else if (dxl_error != 0) {
+          packetHandler->getRxPacketError(dxl_error);
+          Serial.println("failed_set_preset_pose");
+          break;
+        }
+        Serial.println("succeeded_set_preset_pose");
+      }
+
+      if (input_tmp == "exit") {
+        Serial.println("succeeded_exit");
         break;
       }
-      
-      Serial.println(" ");
-      Serial.print("input_tmp:"); Serial.print(input_tmp);
-      Serial.println(" ");
 
-      // Read present position
-      dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&dxl_present_position, &dxl_error);
-      if (dxl_comm_result != COMM_SUCCESS)
-      {
-        packetHandler->getTxRxResult(dxl_comm_result);
-      }
-      else if (dxl_error != 0)
-      {
-        packetHandler->getRxPacketError(dxl_error);
-      }
-      Serial.println("---");
-      Serial.print("ID:");      Serial.print(DXL_ID);
-      Serial.print("PresPos:"); Serial.println(dxl_present_position);
-      Serial.println("---");
-
-       // Write goal position
-      dxl_comm_result = packetHandler->write4ByteTxRx(portHandler, DXL_ID, ADDR_MX_GOAL_POSITION,goal_position_tmp, &dxl_error);
-      if (dxl_comm_result != COMM_SUCCESS){
-        packetHandler->getTxRxResult(dxl_comm_result);
-      }
-      else if (dxl_error != 0){
-        packetHandler->getRxPacketError(dxl_error);
-      }
-
-      delay(500);
-
-      // Read present position
-      dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&dxl_present_position, &dxl_error);
-      if (dxl_comm_result != COMM_SUCCESS)
-      {
-        packetHandler->getTxRxResult(dxl_comm_result);
-      }
-      else if (dxl_error != 0)
-      {
-        packetHandler->getRxPacketError(dxl_error);
-      }
-      Serial.println("---");
-      Serial.print("ID:");      Serial.println(DXL_ID);
-      Serial.print("PresPos:"); Serial.println(dxl_present_position);
-      Serial.println("---");
-     
-      }
+    }
   }
 
   // Disable Dynamixel Torque

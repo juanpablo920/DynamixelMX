@@ -1,52 +1,109 @@
 #!/usr/bin/python
 
 import rospy
+import time
 import serial
 
-port = "/dev/ttyACM0"
-baudrate = 57600
 
-# rospy.init_node('dynamixel_mx')
+class DynamixelMx:
 
-try:
-    serialPort = serial.Serial(port=port, baudrate=baudrate)
-    print("Successful connection to board")
-    print("ok")
-except:
-    print("Failed connection to board")
+    def __init__(self):
+        self.port = "/dev/ttyACM0"
+        self.baudrate_board = 115200
+        self.init_pose = 1000
+        self.final_pose = 2000
+        self.time_sleep = 0.1  # segundos
 
-response = serialPort.readline()
-print(response)
+        self.present_pose = 0
+        self.goal_pose = 0
 
-a = "1"
-a = bytes(a, "ascii")
-serialPort.write(a)
+    def setting_serial_port(self):
+        self.serialPort = serial.Serial(
+            port=self.port,
+            baudrate=self.baudrate_board)
 
-response = serialPort.readline()
-print(response)
+        print("Successful_connection_board")
 
-serialPort.write(b"2\r\n")
+    def setting_board(self):
+        output_tmp = "ok".encode()
 
-response = serialPort.readline()
-print(response)
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
+        print(input_tmp)
+        if (input_tmp == "succeeded_open_port"):
+            self.serialPort.write(output_tmp)
+        else:
+            exit()
 
-serialPort.write(b"3\r\n")
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
+        print(input_tmp)
+        if (input_tmp == "succeeded_change_baudrate"):
+            self.serialPort.write(output_tmp)
+        else:
+            exit()
 
-serialPort.close()
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
+        print(input_tmp)
+        if (input_tmp == "dynamixel_successfully_connected"):
+            pass
+        else:
+            exit()
 
-# serialPort = serial.Serial(port="/dev/ttyACM0", baudrate=57600)
-# print("serialPort ok")
-# serialPort.close()
-# exit()
-# goal_position_tmp = ""
-# while(goal_position_tmp != "q"):
+    def get_present_pose(self):
+        output_tmp = "get_present_pose".encode()
+        self.serialPort.write(output_tmp)
 
-#     response = serialPort.readline()
-#     print(response)
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
 
-#     goal_position_tmp = str(input("goal_position_tmp: "))
-#     serialPort.write(format(ord(goal_position_tmp), 'b'))
+        if (input_tmp == "failed_get_present_pose"):
+            print(input_tmp)
+            exit()
 
-#     time.sleep(0.5)
+        self.present_pose = int(input_tmp)
+        print("present_pose: ", self.present_pose)
 
-# serialPort.close()
+    def set_preset_pose(self, new_present_pose):
+        output_tmp = "set_preset_pose".encode()
+        self.serialPort.write(output_tmp)
+
+        input_tmp = self.serialPort.readline()
+
+        output_tmp = str(new_present_pose).encode()
+        self.serialPort.write(output_tmp)
+
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
+
+        if (input_tmp == "failed_set_preset_pose"):
+            print(input_tmp)
+            exit()
+
+    def exit_board(self):
+        output_tmp = "exit".encode()
+        self.serialPort.write(output_tmp)
+
+        input_tmp = self.serialPort.readline()
+        input_tmp = input_tmp.decode()
+        input_tmp = input_tmp.rstrip("\r\n")
+        print(input_tmp)
+        exit()
+
+
+if __name__ == '__main__':
+    dynamixe_mx = DynamixelMx()
+    dynamixe_mx.setting_serial_port()
+    dynamixe_mx.setting_board()
+
+    for new_pos in range(1834, 810, -50):
+        dynamixe_mx.get_present_pose()
+        dynamixe_mx.set_preset_pose(new_pos)
+
+    dynamixe_mx.exit_board()
