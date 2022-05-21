@@ -1,9 +1,0 @@
-<launch>
-
-    <arg name="project" default="stereo_vis_odom" />
-
-    <rosparam file="$(find stereo_vis_odom)/KITTI/config/params.yaml" command="load" />
-
-    <node pkg="$(arg project)" type="KittiOnLine_2" name="$(arg project)_KittiOnLine_2" output="screen" respawn="true" />
-
-</launch>

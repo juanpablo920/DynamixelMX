@@ -25,5 +25,5 @@
 
 - Rosrun
     source devel/setup.bash
-    deben ser ejecutables
+    rosrun dynamixel_mx dynamixel_mx.py
 

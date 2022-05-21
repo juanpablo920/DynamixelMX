@@ -2,6 +2,7 @@
 
 import rospy
 from std_msgs.msg import Int16
+
 import serial
 import time
 
@@ -23,9 +24,6 @@ class DynamixelMx:
         self.pub_pose = rospy.Publisher(
             "/dynamixel_mx/pose",
             Int16)
-
-    def publish_pose(self):
-        pass
 
     def setting_serial_port(self):
         self.serialPort = serial.Serial(
@@ -65,6 +63,9 @@ class DynamixelMx:
         else:
             self.serialPort.close()
             exit()
+
+    def publish_pose(self):
+        pass
 
     def get_pose(self):
         output_tmp = "get_pose".encode()
@@ -112,25 +113,6 @@ class DynamixelMx:
 
     def go_origin(self):
         rospy.loginfo("go_origin")
-        # sleep = self.sleep_org
-        # self.get_pose()
-        # delta_poses = abs(self.pose - self.init_pose)
-
-        # while (delta_poses > self.delta_error):
-
-        #     if delta_poses < sleep:
-        #         sleep = delta_poses
-
-        #     if (self.pose > self.init_pose):
-        #         new_pos = self.pose - sleep
-        #         dynamixe_mx.set_pose(new_pos)
-        #     else:
-        #         new_pos = self.pose + sleep
-        #         dynamixe_mx.set_pose(new_pos)
-
-        #     self.get_pose()
-        #     delta_poses = abs(self.pose - self.init_pose)
-
         output_tmp = "go_origin".encode()
         self.serialPort.write(output_tmp)
 
