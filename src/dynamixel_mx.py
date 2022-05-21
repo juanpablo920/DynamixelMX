@@ -2,6 +2,7 @@
 
 import rospy
 import time
+from std_msgs.msg import Int16
 import serial
 
 
@@ -12,12 +13,11 @@ class DynamixelMx:
         self.baudrate_board = 115200
         self.init_pose = 1834
         self.final_pose = 810
-        self.sleep_scan = 50
-        self.sleep_org = 100
+        self.sleep_org = 30
+        self.sleep_scan = 10
         self.delta_error = 5
 
-        self.present_pose = 0
-        self.goal_pose = 0
+        self.pose = 0
 
     def setting_serial_port(self):
         self.serialPort = serial.Serial(
@@ -58,35 +58,40 @@ class DynamixelMx:
             self.serialPort.close()
             exit()
 
-    def get_present_pose(self):
-        output_tmp = "get_present_pose".encode()
+    def setting_publisher(self):
+        self.pub_pose = rospy.Publisher(
+            "/dynamixel_mx/pose",
+            Int16)
+
+    def get_pose(self):
+        output_tmp = "get_pose".encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
         input_tmp = input_tmp.decode()
         input_tmp = input_tmp.rstrip("\r\n")
 
-        if (input_tmp == "failed_get_present_pose"):
+        if (input_tmp == "failed_get_pose"):
             rospy.loginfo(input_tmp)
             self.serialPort.close()
             exit()
 
-        self.present_pose = int(input_tmp)
+        self.pose = int(input_tmp)
 
-    def set_preset_pose(self, new_present_pose):
-        output_tmp = "set_preset_pose".encode()
+    def set_pose(self, new_pose):
+        output_tmp = "set_pose".encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
 
-        output_tmp = str(new_present_pose).encode()
+        output_tmp = str(new_pose).encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
         input_tmp = input_tmp.decode()
         input_tmp = input_tmp.rstrip("\r\n")
 
-        if (input_tmp == "failed_set_preset_pose"):
+        if (input_tmp == "failed_set_pose"):
             rospy.loginfo(input_tmp)
             self.serialPort.close()
             exit()
@@ -105,23 +110,23 @@ class DynamixelMx:
     def go_origin(self):
         rospy.loginfo("go_origin")
         # sleep = self.sleep_org
-        # self.get_present_pose()
-        # delta_poses = abs(self.present_pose - self.init_pose)
+        # self.get_pose()
+        # delta_poses = abs(self.pose - self.init_pose)
 
         # while (delta_poses > self.delta_error):
 
         #     if delta_poses < sleep:
         #         sleep = delta_poses
 
-        #     if (self.present_pose > self.init_pose):
-        #         new_pos = self.present_pose - sleep
-        #         dynamixe_mx.set_preset_pose(new_pos)
+        #     if (self.pose > self.init_pose):
+        #         new_pos = self.pose - sleep
+        #         dynamixe_mx.set_pose(new_pos)
         #     else:
-        #         new_pos = self.present_pose + sleep
-        #         dynamixe_mx.set_preset_pose(new_pos)
+        #         new_pos = self.pose + sleep
+        #         dynamixe_mx.set_pose(new_pos)
 
-        #     self.get_present_pose()
-        #     delta_poses = abs(self.present_pose - self.init_pose)
+        #     self.get_pose()
+        #     delta_poses = abs(self.pose - self.init_pose)
 
         output_tmp = "go_origin".encode()
         self.serialPort.write(output_tmp)
@@ -150,22 +155,22 @@ class DynamixelMx:
     def go_scan(self):
         rospy.loginfo("go_scan")
         sleep = self.sleep_scan
-        self.get_present_pose()
-        delta_poses = abs(self.present_pose - self.final_pose)
+        self.get_pose()
+        delta_poses = abs(self.pose - self.final_pose)
 
         while (delta_poses > self.delta_error):
 
             if delta_poses < sleep:
                 sleep = delta_poses
 
-            if (self.present_pose > self.final_pose):
-                new_pos = self.present_pose - sleep
+            if (self.pose > self.final_pose):
+                new_pos = self.pose - sleep
             else:
-                new_pos = self.present_pose + sleep
+                new_pos = self.pose + sleep
 
-            dynamixe_mx.set_preset_pose(new_pos)
-            self.get_present_pose()
-            delta_poses = abs(self.present_pose - self.final_pose)
+            self.set_pose(new_pos)
+            self.get_pose()
+            delta_poses = abs(self.pose - self.final_pose)
 
         rospy.loginfo("arrived_scan")
 

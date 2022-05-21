@@ -92,24 +92,24 @@ void setup() {
       input_tmp = Serial.readString();
       input_tmp.replace("\n", "");
 
-      if (input_tmp == "get_present_pose") {
+      if (input_tmp == "get_pose") {
 
         dxl_comm_result = packetHandler->read4ByteTxRx(portHandler, DXL_ID, ADDR_MX_PRESENT_POSITION, (uint32_t*)&present_pose, &dxl_error);
 
         if (dxl_comm_result != COMM_SUCCESS) {
           packetHandler->getTxRxResult(dxl_comm_result);
-          Serial.println("failed_get_present_pose");
+          Serial.println("failed_get_pose");
           break;
         }
         else if (dxl_error != 0) {
           packetHandler->getRxPacketError(dxl_error);
-          Serial.print("failed_get_present_pose:");
+          Serial.print("failed_get_pose");
           break;
         }
         Serial.println(present_pose);
       }
 
-      if (input_tmp == "set_preset_pose") {
+      if (input_tmp == "set_pose") {
         Serial.println("");
 
         while (Serial.available() == 0);
@@ -120,15 +120,15 @@ void setup() {
 
         if (dxl_comm_result != COMM_SUCCESS) {
           packetHandler->getTxRxResult(dxl_comm_result);
-          Serial.println("failed_set_preset_pose");
+          Serial.println("failed_set_pose");
           break;
         }
         else if (dxl_error != 0) {
           packetHandler->getRxPacketError(dxl_error);
-          Serial.println("failed_set_preset_pose");
+          Serial.println("failed_set_pose");
           break;
         }
-        Serial.println("succeeded_set_preset_pose");
+        Serial.println("succeeded_set_pose");
       }
 
       if (input_tmp == "go_origin") {
@@ -169,13 +169,13 @@ void setup() {
 
         delta_poses = abs(present_pose - origin);
 
-        while (delta_poses > delta_error){
-          
-          if ( delta_poses < sleep){
+        while (delta_poses > delta_error) {
+
+          if ( delta_poses < sleep) {
             sleep = delta_poses;
           }
 
-          if (present_pose > origin){
+          if (present_pose > origin) {
             new_pos = present_pose - sleep;
           }
           else {
@@ -207,7 +207,7 @@ void setup() {
             Serial.print("failed_go_origin");
             break;
           }
-          delay(500);
+          delay(100);
           delta_poses = abs(present_pose - origin);
         }
         Serial.println("arrived_scan");
