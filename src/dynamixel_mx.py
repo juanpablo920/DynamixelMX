@@ -65,7 +65,7 @@ class DynamixelMx:
             exit()
 
     def publish_pose(self):
-        pass
+        self.pub_pose.publish(self.pose)
 
     def get_pose(self):
         output_tmp = "get_pose".encode()

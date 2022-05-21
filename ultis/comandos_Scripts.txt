@@ -26,4 +26,3 @@
 - Rosrun
     source devel/setup.bash
     rosrun dynamixel_mx dynamixel_mx.py
-
