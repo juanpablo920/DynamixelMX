@@ -2,7 +2,7 @@
 
 import rospy
 import rospkg
-from std_msgs.msg import Int16
+from geometry_msgs.msg import PointStamped
 
 import serial
 import yaml
@@ -13,8 +13,7 @@ class DynamixelMx:
 
     def __init__(self):
         r = rospkg.RosPack()
-        pwd_params = r.get_path(
-            'dynamixel_mx')+'/config/params.yaml'
+        pwd_params = r.get_path('dynamixel_mx')+'/config/params.yaml'
 
         with open(pwd_params, 'r') as f:
             params = yaml.load(f)["dynamixel_mx"]
@@ -32,7 +31,7 @@ class DynamixelMx:
     def setting_publisher(self):
         self.pub_pose = rospy.Publisher(
             "/dynamixel_mx/pose",
-            Int16)
+            PointStamped)
 
     def setting_serial_port(self):
         self.serialPort = serial.Serial(
@@ -74,7 +73,10 @@ class DynamixelMx:
             exit()
 
     def publish_pose(self):
-        self.pub_pose.publish(self.pose)
+        pose_mgs = PointStamped()
+        pose_mgs.point.x = int(self.pose)
+        pose_mgs.header.stamp = rospy.Time.now()
+        self.pub_pose.publish(pose_mgs)
 
     def get_pose(self):
         output_tmp = "get_pose".encode()
