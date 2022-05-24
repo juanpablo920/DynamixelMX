@@ -22,8 +22,8 @@ class DynamixelMx:
         self.baudrate_board = params["baudrate_board"]
         self.init_pose = params["init_pose"]
         self.final_pose = params["final_pose"]
-        self.sleep_org = params["sleep_org"]
-        self.sleep_scan = params["sleep_scan"]
+        self.step_org = params["step_org"]
+        self.step_scan = params["step_scan"]
         self.delta_error = params["delta_error"]
 
         self.pose = 0
@@ -132,7 +132,7 @@ class DynamixelMx:
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
-        output_tmp = str(self.sleep_org).encode()
+        output_tmp = str(self.step_org).encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
@@ -150,20 +150,20 @@ class DynamixelMx:
 
     def go_scan(self):
         rospy.loginfo("go_scan")
-        sleep = self.sleep_scan
+        step = self.step_scan
         self.get_pose()
         self.publish_pose()
         delta_poses = abs(self.pose - self.final_pose)
 
         while (delta_poses > self.delta_error):
 
-            if delta_poses < sleep:
-                sleep = delta_poses
+            if delta_poses < step:
+                step = delta_poses
 
             if (self.pose > self.final_pose):
-                new_pos = self.pose - sleep
+                new_pos = self.pose - step
             else:
-                new_pos = self.pose + sleep
+                new_pos = self.pose + step
 
             self.set_pose(new_pos)
             self.get_pose()
