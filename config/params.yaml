@@ -3,6 +3,6 @@ dynamixel_mx:
   baudrate_board: 115200
   init_pose: 810
   final_pose: 1840 
-  step_org: 40
+  step_org: 30
   step_scan: 20
   delta_error: 5
