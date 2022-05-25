@@ -4,5 +4,5 @@ dynamixel_mx:
   init_pose: 1327    #135°
   final_pose: 2356  #225°  
   step_org: 30
-  step_scan: 1
-  delta_error: 5
+  step_scan: 4
+  delta_error: 4
