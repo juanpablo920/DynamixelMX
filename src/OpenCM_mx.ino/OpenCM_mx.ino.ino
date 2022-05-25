@@ -207,7 +207,7 @@ void setup() {
             Serial.print("failed_go_origin");
             break;
           }
-          delay(100);
+          delay(50);
           delta_poses = abs(present_pose - origin);
         }
         Serial.println("arrived_scan");
