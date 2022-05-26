@@ -78,6 +78,10 @@ class DynamixelMx:
         pose_mgs.header.stamp = rospy.Time.now()
         self.pub_pose.publish(pose_mgs)
 
+        pose_mgs.point.x = 0
+        pose_mgs.header.stamp = rospy.Time.now()
+        self.pub_pose.publish(pose_mgs)
+
     def get_pose(self):
         output_tmp = "get_pose".encode()
         self.serialPort.write(output_tmp)
@@ -179,9 +183,10 @@ if __name__ == '__main__':
     dynamixe_mx.setting_publisher()
     dynamixe_mx.setting_serial_port()
     dynamixe_mx.setting_board()
-    try:
-        while not rospy.is_shutdown():
-            dynamixe_mx.go_origin()
-            dynamixe_mx.go_scan()
-    except rospy.ROSInterruptException:
-        dynamixe_mx.exit_board()
+
+    dynamixe_mx.go_origin()
+    dynamixe_mx.go_scan()
+    rospy.loginfo("control C para salir")
+    while not rospy.is_shutdown():
+        pass
+    dynamixe_mx.exit_board()
