@@ -4,9 +4,9 @@
   <version>0.0.0</version>
   <description>The dynamixel_mx package</description>
 
-  <maintainer email="ingenieroavila21@gmail.como">avila</maintainer>
+  <maintainer email="2420171062@estudiantesunibague.edu.co">Juan</maintainer>
   <license>TODO</license>
-  <author>Johan Avila</author>
+  <author>Juan Pablo Ocampo</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
@@ -27,5 +27,5 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-  
+
 </package>

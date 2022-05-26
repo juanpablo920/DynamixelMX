@@ -180,8 +180,8 @@ if __name__ == '__main__':
     dynamixe_mx.setting_serial_port()
     dynamixe_mx.setting_board()
     try:
-        dynamixe_mx.go_origin()
-        dynamixe_mx.go_scan()
-        dynamixe_mx.exit_board()
+        while not rospy.is_shutdown():
+            dynamixe_mx.go_origin()
+            dynamixe_mx.go_scan()
     except rospy.ROSInterruptException:
         dynamixe_mx.exit_board()
