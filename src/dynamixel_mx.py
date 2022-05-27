@@ -80,10 +80,6 @@ class DynamixelMx:
         pose_mgs.header.stamp = rospy.Time.now()
         self.pub_pose.publish(pose_mgs)
 
-        # pose_mgs.point.x = 0
-        # pose_mgs.header.stamp = rospy.Time.now()
-        # self.pub_pose.publish(pose_mgs)
-
     def get_pose(self):
         output_tmp = "get_pose".encode()
         self.serialPort.write(output_tmp)
