@@ -4,7 +4,7 @@
   <version>0.0.0</version>
   <description>The dynamixel_mx package</description>
 
-  <maintainer email="2420171062@estudiantesunibague.edu.co">Juan</maintainer>
+  <maintainer email="2420171051@estudiantesunibague.edu.co">Juan</maintainer>
   <license>TODO</license>
   <author>Juan Pablo Ocampo</author>
 
@@ -22,8 +22,8 @@
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
 
-  <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
