@@ -40,7 +40,7 @@ class DynamixelMx:
         rospy.loginfo("Successful_connection_board")
 
     def setting_board(self):
-        output_tmp = "ok".encode()
+        output_tmp = "1".encode()
 
         input_tmp = self.serialPort.readline()
         input_tmp = input_tmp.decode()
@@ -78,9 +78,9 @@ class DynamixelMx:
         pose_mgs.header.stamp = rospy.Time.now()
         self.pub_pose.publish(pose_mgs)
 
-        pose_mgs.point.x = 0
-        pose_mgs.header.stamp = rospy.Time.now()
-        self.pub_pose.publish(pose_mgs)
+        # pose_mgs.point.x = 0
+        # pose_mgs.header.stamp = rospy.Time.now()
+        # self.pub_pose.publish(pose_mgs)
 
     def get_pose(self):
         output_tmp = "get_pose".encode()
@@ -98,12 +98,10 @@ class DynamixelMx:
         self.pose = int(input_tmp)
 
     def set_pose(self, new_pose):
-        output_tmp = "set_pose".encode()
-        self.serialPort.write(output_tmp)
-
-        input_tmp = self.serialPort.readline()
-
-        output_tmp = str(new_pose).encode()
+        output_tmp = "set_pose"
+        output_tmp += ":"
+        output_tmp += str(new_pose)
+        output_tmp = output_tmp.encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
@@ -128,53 +126,59 @@ class DynamixelMx:
 
     def go_origin(self):
         rospy.loginfo("go_origin")
-        output_tmp = "go_origin".encode()
-        self.serialPort.write(output_tmp)
+        output_tmp = "go_origin"
+        output_tmp += ":"
+        output_tmp += str(self.init_pose)
+        output_tmp += ":"
+        output_tmp += str(self.step_org)
+        output_tmp += ":"
+        output_tmp += str(self.delta_error)
+        output_tmp = output_tmp.encode()
 
-        input_tmp = self.serialPort.readline()
-        output_tmp = str(self.init_pose).encode()
-        self.serialPort.write(output_tmp)
-
-        input_tmp = self.serialPort.readline()
-        output_tmp = str(self.step_org).encode()
-        self.serialPort.write(output_tmp)
-
-        input_tmp = self.serialPort.readline()
-        output_tmp = str(self.delta_error).encode()
         self.serialPort.write(output_tmp)
 
         input_tmp = self.serialPort.readline()
         input_tmp = input_tmp.decode()
         input_tmp = input_tmp.rstrip("\r\n")
-        rospy.loginfo(input_tmp)
 
+        rospy.loginfo(input_tmp)
         if (input_tmp == "failed_go_origin"):
             self.serialPort.close()
             exit()
 
     def go_scan(self):
         rospy.loginfo("go_scan")
-        step = self.step_scan
-        self.get_pose()
-        self.publish_pose()
-        delta_poses = abs(self.pose - self.final_pose)
+        output_tmp = "go_scan"
+        output_tmp += ":"
+        output_tmp += str(self.final_pose)
+        output_tmp += ":"
+        output_tmp += str(self.step_scan)
+        output_tmp += ":"
+        output_tmp += str(self.delta_error)
+        output_tmp = output_tmp.encode()
 
-        while (delta_poses > self.delta_error):
+        self.serialPort.write(output_tmp)
 
-            if delta_poses < step:
-                step = delta_poses
+        output_tmp = "1".encode()
 
-            if (self.pose > self.final_pose):
-                new_pos = self.pose - step
+        state_set_pose = 1
+        while (state_set_pose == 1):
+            input_tmp = self.serialPort.readline()
+            input_tmp = input_tmp.decode()
+            input_tmp = input_tmp.rstrip("\r\n")
+
+            if (input_tmp == "arrived_scan"):
+                state_set_pose = 0
+                rospy.loginfo(input_tmp)
+            elif (input_tmp == "failed_go_scan"):
+                rospy.loginfo(input_tmp)
+                self.serialPort.close()
+                exit()
             else:
-                new_pos = self.pose + step
-
-            self.set_pose(new_pos)
-            self.get_pose()
-            self.publish_pose()
-            delta_poses = abs(self.pose - self.final_pose)
-
-        rospy.loginfo("arrived_scan")
+                self.pose = int(input_tmp)
+                self.publish_pose()
+                time.sleep(0.1)
+                self.serialPort.write(output_tmp)
 
 
 if __name__ == '__main__':
@@ -186,7 +190,7 @@ if __name__ == '__main__':
 
     dynamixe_mx.go_origin()
     dynamixe_mx.go_scan()
-    rospy.loginfo("control C para salir")
+    rospy.loginfo("control + C para salir")
     while not rospy.is_shutdown():
         pass
     dynamixe_mx.exit_board()
