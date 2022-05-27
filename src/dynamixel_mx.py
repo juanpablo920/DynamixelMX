@@ -25,8 +25,8 @@ class DynamixelMx:
         self.step_org = params["step_org"]
         self.step_scan = params["step_scan"]
         self.delta_error = params["delta_error"]
-        self.resolution = params["resolution"]
         self.base_pose = params["base_pose"]
+        self.resolution = params["resolution"]
 
         self.pose = 0
 
