@@ -6,4 +6,5 @@ dynamixel_mx:
   step_org: 10
   step_scan: 10
   delta_error: 5
+  base_pose: 1834
   resolution: 11.175

@@ -26,6 +26,7 @@ class DynamixelMx:
         self.step_scan = params["step_scan"]
         self.delta_error = params["delta_error"]
         self.resolution = params["resolution"]
+        self.base_pose = params["base_pose"]
 
         self.pose = 0
 
@@ -75,7 +76,7 @@ class DynamixelMx:
 
     def publish_pose(self):
         pose_mgs = PointStamped()
-        pose_mgs.point.x = int(self.pose)/self.resolution
+        pose_mgs.point.x = (int(self.pose) - self.base_pose)/self.resolution
         pose_mgs.header.stamp = rospy.Time.now()
         self.pub_pose.publish(pose_mgs)
 
