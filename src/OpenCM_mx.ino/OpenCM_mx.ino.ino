@@ -250,7 +250,7 @@ void setup() {
           if ( delta_poses < step_org) {
             step_org = delta_poses;
           }
-  
+
           if (present_pose > origin) {
             new_pos = present_pose - step_org;
           }
