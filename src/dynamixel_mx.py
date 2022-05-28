@@ -191,5 +191,5 @@ if __name__ == '__main__':
     rospy.loginfo("control + C para salir")
     while not rospy.is_shutdown():
         dynamixe_mx.get_pose()
-        dynamixe_mx.pub_pose()
+        dynamixe_mx.publish_pose()
     dynamixe_mx.exit_board()
