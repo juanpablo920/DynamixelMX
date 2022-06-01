@@ -335,6 +335,8 @@ void setup() {
             exit(0);
           }
 
+          delay(100);
+
           present_pose = get_pose(portHandler, packetHandler);
 
           if (present_pose == -1) {

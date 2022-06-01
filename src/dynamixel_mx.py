@@ -175,7 +175,7 @@ class DynamixelMx:
             else:
                 self.pose = int(input_tmp)
                 self.publish_pose()
-                time.sleep(0.1)
+                # time.sleep(0.1)
                 self.serialPort.write(output_tmp)
 
 
