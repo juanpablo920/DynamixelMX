@@ -127,7 +127,7 @@ class DynamixelMx:
         rospy.loginfo("go_origin")
         output_tmp = "go_origin"
         output_tmp += ":"
-        output_tmp += str(self.init_pose)
+        output_tmp += str(self.origin_pose)
         output_tmp += ":"
         output_tmp += str(self.step_org)
         output_tmp += ":"
@@ -180,8 +180,10 @@ class DynamixelMx:
 
     def go_scans(self):
         for scan_pose in self.scan_poses:
+            time.sleep(1)
             self.go_origin()
             self.go_scan(scan_pose)
+        self.go_origin()
 
 
 if __name__ == '__main__':
