@@ -20,12 +20,13 @@ class DynamixelMx:
 
         self.port = params["port"]
         self.baudrate_board = params["baudrate_board"]
+        self.origin_pose = params["origin_pose"]
+        self.scan_poses = params["scan_poses"]
         self.init_pose = params["init_pose"]
         self.final_pose = params["final_pose"]
         self.step_org = params["step_org"]
         self.step_scan = params["step_scan"]
         self.delta_error = params["delta_error"]
-        self.base_pose = params["base_pose"]
         self.resolution = params["resolution"]
 
         self.pose = 0
@@ -76,7 +77,7 @@ class DynamixelMx:
 
     def publish_pose(self):
         pose_mgs = PointStamped()
-        pose_mgs.point.x = (int(self.pose) - self.base_pose)/self.resolution
+        pose_mgs.point.x = (int(self.pose) - self.origin_pose)/self.resolution
         pose_mgs.header.stamp = rospy.Time.now()
         self.pub_pose.publish(pose_mgs)
 
@@ -144,11 +145,11 @@ class DynamixelMx:
             self.serialPort.close()
             exit()
 
-    def go_scan(self):
+    def go_scan(self, scan_pose):
         rospy.loginfo("go_scan")
         output_tmp = "go_scan"
         output_tmp += ":"
-        output_tmp += str(self.final_pose)
+        output_tmp += str(scan_pose)
         output_tmp += ":"
         output_tmp += str(self.step_scan)
         output_tmp += ":"
@@ -175,8 +176,12 @@ class DynamixelMx:
             else:
                 self.pose = int(input_tmp)
                 self.publish_pose()
-                # time.sleep(0.1)
                 self.serialPort.write(output_tmp)
+
+    def go_scans(self):
+        for scan_pose in self.scan_poses:
+            self.go_origin()
+            self.go_scan(scan_pose)
 
 
 if __name__ == '__main__':
@@ -185,9 +190,7 @@ if __name__ == '__main__':
     dynamixe_mx.setting_publisher()
     dynamixe_mx.setting_serial_port()
     dynamixe_mx.setting_board()
-
-    dynamixe_mx.go_origin()
-    dynamixe_mx.go_scan()
+    dynamixe_mx.go_scans()
     rospy.loginfo("control + C para salir")
     while not rospy.is_shutdown():
         dynamixe_mx.get_pose()

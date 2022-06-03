@@ -1,10 +1,16 @@
 dynamixel_mx:
   port: "/dev/ttyACM0"
   baudrate_board: 115200
+
+  origin_pose: 1834 # 0°
+
+  #             25°,  45°
+  scan_poses: [2130, 1327]
+
   init_pose: 2130 #-25°
   final_pose: 1327 #45°
+
   step_org: 20
   step_scan: 10
   delta_error: 5
-  base_pose: 1834
   resolution: 11.175
